@@ -1,71 +1,47 @@
 package com.example;
+import software.amazon.awssdk.auth.credentials.ProfileCredentialsProvider;
+import software.amazon.awssdk.regions.Region;
+import software.amazon.awssdk.services.s3.S3Client;
+import software.amazon.awssdk.services.s3.model.*;
 
-// import software.amazon.awssdk.services.s3.S3Client;
-// import software.amazon.awssdk.services.sqs.SqsClient;
-// import software.amazon.awssdk.services.rekognition.RekognitionClient;
-// import software.amazon.awssdk.regions.Region;
+import java.io.File;
+import java.nio.file.Paths;
 
-// public class InstanceA {
-//     public static void main(String[] args) {
-//         // Set up AWS clients
-//         // S3Client s3Client = S3Client.builder().region(Region.US_EAST_1).build();
-//         // SqsClient sqsClient = SqsClient.builder().region(Region.US_EAST_1).build();
-//         // RekognitionClient rekognitionClient = RekognitionClient.builder().region(Region.US_EAST_1).build();
-
-//         // Add your logic here for image processing and SQS
-//         System.out.println("Instance A is ready.");
-//     }
-// }
-
-import com.amazonaws.services.rekognition.AmazonRekognition;
-import com.amazonaws.services.rekognition.AmazonRekognitionClientBuilder;
-import com.amazonaws.services.rekognition.model.*;
-import com.amazonaws.services.sqs.AmazonSQS;
-import com.amazonaws.services.sqs.AmazonSQSClientBuilder;
-import com.amazonaws.services.sqs.model.SendMessageRequest;
-import com.amazonaws.services.s3.AmazonS3;
-import com.amazonaws.services.s3.AmazonS3ClientBuilder;
-
-import java.util.List;
-
-public class InstanceA {
-
+public class FetchImagesFromS3 {
     public static void main(String[] args) {
-        // Initialize AWS clients for Rekognition, SQS, and S3
-        AmazonRekognition rekognitionClient = AmazonRekognitionClientBuilder.defaultClient();
-        AmazonSQS sqsClient = AmazonSQSClientBuilder.defaultClient();
-        AmazonS3 s3Client = AmazonS3ClientBuilder.defaultClient();
+        String bucketName = "njit-cs-643";  // S3 bucket name
+        String keyPrefix = "";              // Path in bucket (if images are in root, leave blank)
+        String downloadDir = "C:/Users/acer/Downloads";  // Local path to download the images
 
-        String bucketName = "njit-cs-643";
-        String queueUrl = "<SQS-Queue-URL>";
-        int imageCount = 10;
+        // Create an S3 client
+        S3Client s3 = S3Client.builder()
+                .region(Region.US_EAST_1)   // Your bucket region
+                .credentialsProvider(ProfileCredentialsProvider.create())  // Credentials profile in ~/.aws/credentials
+                .build();
 
-        for (int i = 1; i <= imageCount; i++) {
-            String imageKey = i + ".jpg";
+        // List and download images from S3
+        try {
+            // List objects in the S3 bucket
+            ListObjectsV2Request listReq = ListObjectsV2Request.builder()
+                    .bucket(bucketName)
+                    .prefix(keyPrefix)      // List objects with this prefix (optional)
+                    .build();
 
-            // Perform object detection on the image using Rekognition
-            DetectLabelsRequest request = new DetectLabelsRequest()
-                    .withImage(new Image().withS3Object(new S3Object().withBucket(bucketName).withName(imageKey)))
-                    .withMinConfidence(90f);
+            ListObjectsV2Response listRes = s3.listObjectsV2(listReq);
+            for (S3Object s3Object : listRes.contents()) {
+                String key = s3Object.key();
+                System.out.println("Downloading: " + key);
 
-            DetectLabelsResult result = rekognitionClient.detectLabels(request);
-            List<Label> labels = result.getLabels();
+                // Download the object (image) to the local file system
+                GetObjectRequest getReq = GetObjectRequest.builder()
+                        .bucket(bucketName)
+                        .key(key)
+                        .build();
 
-            // Check if 'Car' label is detected with confidence > 90%
-            for (Label label : labels) {
-                if (label.getName().equals("Car") && label.getConfidence() > 90) {
-                    // Send the image index to SQS
-                    SendMessageRequest sendMsgRequest = new SendMessageRequest()
-                            .withQueueUrl(queueUrl)
-                            .withMessageBody(imageKey);
-                    sqsClient.sendMessage(sendMsgRequest);
-                    System.out.println("Car detected in " + imageKey + ", sending to SQS.");
-                    break;
-                }
+                s3.getObject(getReq, Paths.get(downloadDir + File.separator + key));
             }
+        } catch (S3Exception e) {
+            System.err.println(e.getMessage());
         }
-
-        // Signal end of processing by sending "-1" to the queue
-        sqsClient.sendMessage(new SendMessageRequest(queueUrl, "-1"));
     }
 }
