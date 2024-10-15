@@ -7,7 +7,7 @@ import software.amazon.awssdk.services.s3.model.*;
 import java.io.File;
 import java.nio.file.Paths;
 
-public class FetchImagesFromS3 {
+public class InstanceA {
     public static void main(String[] args) {
         String bucketName = "njit-cs-643";  // S3 bucket name
         String keyPrefix = "";              // Path in bucket (if images are in root, leave blank)
