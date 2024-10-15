@@ -11,7 +11,7 @@ public class InstanceA {
     public static void main(String[] args) {
         String bucketName = "njit-cs-643";  // S3 bucket name
         String keyPrefix = "";              // Path in bucket (if images are in root, leave blank)
-        String downloadDir = "C:/Users/acer/Downloads";  // Local path to download the images
+        String downloadDir = "/home/ec2-user/images";  // Local path to download the images
 
         // Create an S3 client
         S3Client s3 = S3Client.builder()
