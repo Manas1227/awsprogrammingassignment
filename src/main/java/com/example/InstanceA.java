@@ -21,7 +21,7 @@ public class InstanceA {
     public static void main(String[] args) {
         String bucketName = "njit-cs-643";  // Your S3 bucket name
         Region region = Region.US_EAST_1;
-        String queueUrl = "your-sqs-queue-url"; // Replace with your actual SQS Queue URL
+        String queueUrl = "https://sqs.us-east-1.amazonaws.com/610111708296/imageindexes"; // Replace with your actual SQS Queue URL
 
         RekognitionClient rekClient = RekognitionClient.builder()
                 .region(region)
