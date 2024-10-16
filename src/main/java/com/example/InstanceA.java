@@ -8,15 +8,20 @@ import software.amazon.awssdk.services.s3.S3Client;
 import software.amazon.awssdk.services.s3.model.ListObjectsV2Request;
 import software.amazon.awssdk.services.s3.model.ListObjectsV2Response;
 import software.amazon.awssdk.services.s3.model.S3Object;
+import software.amazon.awssdk.services.sqs.SqsClient;
+import software.amazon.awssdk.services.sqs.model.SendMessageRequest;
+import software.amazon.awssdk.services.sqs.model.SqsException;
 
 import java.util.ArrayList;
 import java.util.List;
+
 
 public class InstanceA {
 
     public static void main(String[] args) {
         String bucketName = "njit-cs-643";  // Your S3 bucket name
         Region region = Region.US_EAST_1;
+        String queueUrl = "your-sqs-queue-url"; // Replace with your actual SQS Queue URL
 
         RekognitionClient rekClient = RekognitionClient.builder()
                 .region(region)
@@ -28,15 +33,21 @@ public class InstanceA {
                 .credentialsProvider(ProfileCredentialsProvider.create())
                 .build();
 
+        SqsClient sqsClient = SqsClient.builder()
+                .region(region)
+                .credentialsProvider(ProfileCredentialsProvider.create())
+                .build();
+
         // List all images in the S3 bucket and perform object detection on each
         List<String> imageKeys = listImageKeys(s3Client, bucketName);
         for (String imageKey : imageKeys) {
             System.out.println("Processing image: " + imageKey);
-            detectObjects(rekClient, bucketName, imageKey);
+            detectObjects(rekClient, bucketName, imageKey, sqsClient, queueUrl);
         }
 
         rekClient.close();
         s3Client.close();
+        sqsClient.close();
     }
 
     // Method to list all object keys (file names) in the S3 bucket
@@ -56,7 +67,7 @@ public class InstanceA {
         return imageKeys;
     }
 
-    public static void detectObjects(RekognitionClient rekClient, String bucketName, String imageKey) {
+    public static void detectObjects(RekognitionClient rekClient, String bucketName, String imageKey, SqsClient sqsClient, String queueUrl) {
         try {
             // Build the S3 object reference for Rekognition
             Image image = Image.builder()
@@ -82,10 +93,25 @@ public class InstanceA {
                 if (label.name().equalsIgnoreCase("Car") && label.confidence() > 90.0) {
                     System.out.println("Car detected in image: " + imageKey + " with confidence: " + label.confidence());
                     // Add the image index to SQS if a car is detected
-                    // For example: sendToSqs(imageKey);
+                    sendToSqs(sqsClient, queueUrl, imageKey);
                 }
             }
         } catch (RekognitionException e) {
+            System.err.println(e.getMessage());
+        }
+    }
+
+    // Method to send a message (image key) to SQS
+    public static void sendToSqs(SqsClient sqsClient, String queueUrl, String imageKey) {
+        try {
+            SendMessageRequest sendMsgRequest = SendMessageRequest.builder()
+                    .queueUrl(queueUrl)
+                    .messageBody(imageKey)  // Send the image index (key) to the queue
+                    .build();
+
+            sqsClient.sendMessage(sendMsgRequest);
+            System.out.println("Sent message to SQS: " + imageKey);
+        } catch (SqsException e) {
             System.err.println(e.getMessage());
         }
     }
