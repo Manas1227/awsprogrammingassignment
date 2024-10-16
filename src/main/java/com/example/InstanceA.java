@@ -12,7 +12,7 @@ import software.amazon.awssdk.services.s3.model.S3Object;
 import java.util.ArrayList;
 import java.util.List;
 
-public class ObjectRecognition {
+public class InstanceA {
 
     public static void main(String[] args) {
         String bucketName = "njit-cs-643";  // Your S3 bucket name
