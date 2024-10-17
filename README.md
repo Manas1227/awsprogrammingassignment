@@ -1,7 +1,7 @@
 # Car Recognition and Store key in SQS
 I created this repository for demonstrate AWS Programming Assignment for course CS-643
 
-Main purposr of the repository is to make the development on VS code and deployment of the code to EC2 much easier.
+Main purposr of the repository is to make the development on VS code and deployment of the code to EC2 instance much easier.
 This repository contains the code for Car recognition portion of the Programmin Assignment which includes
 - Fetching images from s3 bucket
 - Identifying images that is it car or not
@@ -93,3 +93,18 @@ To execute the maven project
 ```bash
 mvn exec:java -Dexec.mainclass="com.example.<main_class_name>"
 ```
+
+# NOTE
+Whenever you restart the lab to work on your existing project on EC2 instances, it's important to update the AWS credentials file with the new information, such as the secret key, access key, and session token. Below are the steps on how to do it:
+
+- After connecting to the specific EC2 instance, navigate to the /home/ec2-user directory.
+- Execute the following commands one by one to ensure that the .aws directory exists and contains the credentials file. These commands also help in updating old or expired credentials with the new ones:
+
+```sh
+ls -a
+cd ~/.aws
+ls
+nano credentials
+```
+
+In the nano editor, use `ctrl + s` to save the changes and `ctrl + x` to exit the editor.
