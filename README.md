@@ -1,17 +1,24 @@
-# awsprogrammingassignment
+# Car Recognition and Store key in SQS
 I created this repository for demonstrate AWS Programming Assignment for course CS-643
+
+Main purposr of the repository is to make the development on VS code and deployment of the code to EC2 much easier.
+This repository contains the code for Car recognition portion of the Programmin Assignment which includes
+- Fetching images from s3 bucket
+- Identifying images that is it car or not
+- Store all the car image Keys on SQS which is an entry point for the next instance B
+
 
 # Steps to create EC2 instance
 Go to the EC2 service on AWS console
 There is an option 'Launch Instances' to create new instance
 After click on the button it will going to ask some informations to create the instance
-    Enter Name of the instance
-    Choose an OS image for instance which is known as Amazon Instance Imange (AMI)
-    Select Architecture of the instance
-    Now it will ask to choose the Instance type as per the requirements but for this assignment we can go with the Micro instance
-    Select the appropiate Key pair credentials which help to connect with the instance
-    There is an option for security to control the traffic for the instance, and for this assignment we allow all the SSH, HTTP, and HTTPS trafic from the internet.
-    After selecting all the additional details we can finally click on Launch Instance to start the instance.
+- Enter Name of the instance
+- Choose an OS image for instance which is known as Amazon Instance Imange (AMI)
+- Select Architecture of the instance
+- Now it will ask to choose the Instance type as per the requirements but for this assignment we can go with the Micro instance
+- Select the appropiate Key pair credentials which help to connect with the instance
+- There is an option for security to control the traffic for the instance, and for this assignment we allow all the SSH, HTTP, and HTTPS trafic from the internet.
+- After selecting all the additional details we can finally click on Launch Instance to start the instance.
 
 Once the instance is moved to running state we can connect to the newly launched instance to deploy our program code on the instance.
 
