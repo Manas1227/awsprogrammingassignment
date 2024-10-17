@@ -19,9 +19,9 @@ import java.util.List;
 public class InstanceA {
 
     public static void main(String[] args) {
-        String bucketName = "njit-cs-643";  // Your S3 bucket name
+        String bucketName = "njit-cs-643";  // S3 bucket name
         Region region = Region.US_EAST_1;
-        String queueUrl = "https://sqs.us-east-1.amazonaws.com/610111708296/imageindexes"; // Replace with your actual SQS Queue URL
+        String queueUrl = "https://sqs.us-east-1.amazonaws.com/610111708296/imageindexes";
 
         RekognitionClient rekClient = RekognitionClient.builder()
                 .region(region)
@@ -44,6 +44,10 @@ public class InstanceA {
             System.out.println("Processing image: " + imageKey);
             detectObjects(rekClient, bucketName, imageKey, sqsClient, queueUrl);
         }
+
+        // Send termination signal (-1) to SQS to notify Instance B
+        sendToSqs(sqsClient, queueUrl, "-1");
+        System.out.println("All images processed. Termination signal -1 sent.");
 
         rekClient.close();
         s3Client.close();
